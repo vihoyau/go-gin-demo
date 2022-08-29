@@ -52,7 +52,7 @@ type Redis struct {
 
 var ServerSetting = &Server{}
 var AppSetting = &App{}
-var DataBaseSetting = &DataBase{}
+var DatabaseSetting = &DataBase{}
 var RedisSetting = &Redis{}
 
 // 声明全局变量，引入ini库
@@ -69,7 +69,7 @@ func Setup() {
 	// 映射结构体的关系-> 好像java的getter、setter基础类
 	mapTo("app", AppSetting)
 	mapTo("server", ServerSetting)
-	mapTo("database", DataBaseSetting)
+	mapTo("database", DatabaseSetting)
 	mapTo("redis", RedisSetting)
 
 	// 改造数据单位
