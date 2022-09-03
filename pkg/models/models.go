@@ -32,9 +32,11 @@ func Setup() {
 	}
 	// 是否默认使用单表
 	db.SingularTable(true)
-	//
+	// 设置注册时间(避免分布式系统的时间带来很多问题，采取时间统一方式)
 	db.Callback().Create().Replace("gorm:update_time_stamp", updateTimeStampForCreateCallback)
 	db.Callback().Update().Replace("gorm:update_time_stamp", updateTimeStampForUpdateCallback)
+	// 删除原有的，注册新的回调方式
+	// 设置删除回滚能力
 	db.Callback().Delete().Replace("gorm:delete", deleteCallback)
 
 	// 给数据库限制连接数
@@ -68,13 +70,13 @@ func deleteCallback(scope *gorm.Scope) {
 		if str, ok := scope.Get("gorm: delete_option"); ok {
 			extraOption = fmt.Sprint(str)
 		}
-
+		// 查找已删除的数据
 		deleteOnField, hasDeleteOnField := scope.FieldByName("DeletedOn")
 
-		// 做一些处理 如果搜索不到且表已删除 -> 给当前表更新
+		// 做一些处理 如果搜索到该表且表已删除 -> 给当前表设置删除时间
 		if !scope.Search.Unscoped && hasDeleteOnField {
 			scope.Raw(fmt.Sprintf(
-				"UPDATE: %v SET %v=%v%v%v",
+				"UPDATE %v SET %v=%v%v%v",
 				scope.QuotedTableName(),
 				scope.Quote(deleteOnField.DBName),
 				scope.AddToVars(time.Now().Unix()),
@@ -82,7 +84,7 @@ func deleteCallback(scope *gorm.Scope) {
 				addExtraSpaceIfExist(extraOption),
 			))
 		} else {
-			// 删除该表中
+			// 删除该表
 			scope.Raw(fmt.Sprintf("DELETED from :%v%v%v",
 				scope.QuotedTableName(),
 				addExtraSpaceIfExist(scope.CombinedConditionSql()),
