@@ -32,9 +32,13 @@ func main() {
 	gin.SetMode(setting.ServerSetting.RunMode)
 	// 初始化路由 -> 所有的请求链路都将写入这里
 	routersInit := routers.InitRouter()
+	// 设置下行超时限制
 	readTimeout := setting.ServerSetting.ReadTimeout
+	// 设置上行超时限制
 	writeTimeout := setting.ServerSetting.WriteTimeout
+	// 对端口打印并赋值
 	endPoint := fmt.Sprintf(":%d", setting.ServerSetting.HttpPort)
+	// 设置最大请求头数据量，左移20个字符。相当于100000000000000...
 	maxHeaderBytes := 1 << 20
 
 	server := &http.Server{
